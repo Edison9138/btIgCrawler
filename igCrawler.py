@@ -7,6 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import NoSuchElementException
 import time
 
 
@@ -46,113 +47,132 @@ time.sleep(5)
 
 # Go to BT homepage
 driver.get("https://www.instagram.com/beyondtaiwan/")
-
 time.sleep(5)
 
+# Scroll down once. In this case, can get the data of the latest 33 posts
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+time.sleep(3)
+
 # Select all posts
-posts = driver.find_elements(By.CLASS_NAME, "_aagw")
-print(len(posts))
+posts = driver.find_elements(By.CLASS_NAME, "_aagu")
+print("Number of posts get: ", len(posts))
 
-# post4 = posts[3]
-# post4.click()
+for post in posts:
+    driver.execute_script("arguments[0].click();", post)
+    # post.click()
+    time.sleep(2)
 
-# time.sleep(3)
+    try:
+        # Select and click on the insight button
+        view_insight_button = driver.find_element(By.XPATH, "//*[text()='View insights']")
+        view_insight_button.click()
 
-# # Select and click on the insight button
-# view_insight_button = driver.find_element(By.XPATH, "//*[text()='View insights']")
-# view_insight_button.click()
+        time.sleep(2)
 
-# time.sleep(2)
+        insight_blocks = driver.find_elements(By.CLASS_NAME, "wbloks_1")
+        num_insight_blocks = len(insight_blocks)
+        print("number of insight blocks", len(insight_blocks))
+        # If has "external link taps" will have 1 more "wbloks_1"
 
-# insight_blocks = driver.find_elements(By.CLASS_NAME, "wbloks_1")
+        # The parse structures of likes, comments, replies, and saves are the same
+        # Likes
+        likes_block = insight_blocks[14]
+        likes_span = likes_block.find_element(By.XPATH, ".//span")
+        likes = likes_span.text
 
-# # The parse structures of likes, comments, replies, and saves are the same
-# # Likes
-# likes_block = insight_blocks[14]
-# likes_span = likes_block.find_element(By.XPATH, ".//span")
-# likes = likes_span.text
+        # Comments
+        comments_block = insight_blocks[18]
+        comments_span = comments_block.find_element(By.XPATH, ".//span")
+        comments = comments_span.text
 
-# # Comments
-# comments_block = insight_blocks[18]
-# comments_span = comments_block.find_element(By.XPATH, ".//span")
-# comments = comments_span.text
+        # Replies
+        replies_block = insight_blocks[22]
+        replies_span = replies_block.find_element(By.XPATH, ".//span")
+        replies = replies_span.text
 
-# # Replies
-# replies_block = insight_blocks[22]
-# replies_span = replies_block.find_element(By.XPATH, ".//span")
-# replies = replies_span.text
+        # Saves
+        saves_block = insight_blocks[26]
+        saves_span = saves_block.find_element(By.XPATH, ".//span")
+        saves = saves_span.text
+        print(likes, comments, replies, saves)
 
-# # Saves
-# saves_block = insight_blocks[26]
-# saves_span = saves_block.find_element(By.XPATH, ".//span")
-# saves = saves_span.text
-# print(likes, comments, replies, saves)
+        # Interactions
+        interactions_block = insight_blocks[36]
+        interactions_spans = interactions_block.find_elements(By.XPATH, ".//span")
+        interations = interactions_spans[0].text
+        print(interations)
 
-# # Interactions
-# interactions_block = insight_blocks[36]
-# interactions_spans = interactions_block.find_elements(By.XPATH, ".//span")
-# interations = interactions_spans[0].text
-# print(interations)
+        # The parse structure of profile visits and external link taps are the same
+        # Profile visits
+        profile_visits_block = insight_blocks[37]
+        profile_visits_spans = profile_visits_block.find_elements(By.XPATH, ".//span")
+        profile_visits = profile_visits_spans[1].text
+        print(profile_visits)
 
-# # The parse structure of profile visits and external link taps are the same
-# # Profile visits
-# profile_visits_block = insight_blocks[37]
-# profile_visits_spans = profile_visits_block.find_elements(By.XPATH, ".//span")
-# profile_visits = profile_visits_spans[1].text
-# print(profile_visits)
-
-# # External link tpas
-# external_link_taps_block = insight_blocks[38]
-# external_link_taps_spans = external_link_taps_block.find_elements(By.XPATH, ".//span")
-# external_link_taps = external_link_taps_spans[1].text
-# print(external_link_taps)
+        # Omit External link taps since not every post has it
+        # External link taps
+        # external_link_taps_block = insight_blocks[38]
+        # external_link_taps_spans = external_link_taps_block.find_elements(By.XPATH, ".//span")
+        # external_link_taps = external_link_taps_spans[1].text
+        # print(external_link_taps)
 
 
-# # Account reach
-# account_reach_block = insight_blocks[48]
-# account_reach_spans = account_reach_block.find_elements(By.XPATH, ".//span")
-# account_reach = account_reach_spans[0].text
-# account_reach_not_follow = account_reach_spans[2].text
-# account_reach_not_follow = account_reach_not_follow[:account_reach_not_follow.index("%")]
-# print(account_reach)
-# print(account_reach_not_follow)
+        # Account reach
+        account_reach_block = insight_blocks[48] if num_insight_blocks == 55 else insight_blocks[47]
+        account_reach_spans = account_reach_block.find_elements(By.XPATH, ".//span")
+        account_reach = account_reach_spans[0].text
+        account_reach_not_follow = account_reach_spans[2].text
+        account_reach_not_follow = account_reach_not_follow[:account_reach_not_follow.index("%")]
+        print(account_reach)
+        print(account_reach_not_follow)
 
-# # The parse structure of impressions, from home, from hashtags, from profile, from other, follows back are the same
-# # Impressions 
-# impressions_block = insight_blocks[49]
-# impressions_spans = impressions_block.find_elements(By.XPATH, ".//span")
-# impressions = impressions_spans[1].text
-# print(impressions)
+        # The parse structure of impressions, from home, from hashtags, from profile, from other, follows back are the same
+        # Impressions 
+        impressions_block = insight_blocks[49] if num_insight_blocks == 55 else insight_blocks[48]
+        impressions_spans = impressions_block.find_elements(By.XPATH, ".//span")
+        impressions = impressions_spans[1].text
+        print(impressions)
 
-# # Impressions from home
-# impressions_from_home_block = insight_blocks[50]
-# impressions_from_home_spans = impressions_from_home_block.find_elements(By.XPATH, ".//span")
-# impressions_from_home = impressions_from_home_spans[1].text
-# print(impressions_from_home)
+        # Impressions from home
+        impressions_from_home_block = insight_blocks[50] if num_insight_blocks == 55 else insight_blocks[49]
+        impressions_from_home_spans = impressions_from_home_block.find_elements(By.XPATH, ".//span")
+        impressions_from_home = impressions_from_home_spans[1].text
+        print(impressions_from_home)
 
-# # Impressions from hashtag
-# impressions_from_hashtag_block = insight_blocks[51]
-# impressions_from_hashtag_spans = impressions_from_hashtag_block.find_elements(By.XPATH, ".//span")
-# impressions_from_hashtag = impressions_from_hashtag_spans[1].text
-# print(impressions_from_hashtag)
+        # Impressions from hashtag
+        impressions_from_hashtag_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
+        impressions_from_hashtag_spans = impressions_from_hashtag_block.find_elements(By.XPATH, ".//span")
+        impressions_from_hashtag = impressions_from_hashtag_spans[1].text
+        print(impressions_from_hashtag)
 
-# # Impressions from profile
-# impressions_from_profile_block = insight_blocks[52]
-# impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
-# impressions_from_profile = impressions_from_profile_spans[1].text
-# print(impressions_from_profile)
+        # Impressions from profile
+        impressions_from_profile_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
+        impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
+        impressions_from_profile = impressions_from_profile_spans[1].text
+        print(impressions_from_profile)
 
-# # Impressions from other
-# impressions_from_other_block = insight_blocks[53]
-# impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
-# impressions_from_other = impressions_from_other_spans[1].text
-# print(impressions_from_other)
+        # Impressions from other
+        impressions_from_other_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
+        impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
+        impressions_from_other = impressions_from_other_spans[1].text
+        print(impressions_from_other)
 
-# # Follows back]
-# follows_block = insight_blocks[54]
-# follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
-# follows_block = follows_block_spans[1].text
-# print(follows_block)
+        # Follows back]
+        follows_block = insight_blocks[54] if num_insight_blocks == 55 else insight_blocks[53]
+        follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
+        follows_block = follows_block_spans[1].text
+        print(follows_block)
+
+        # Click the Chrome's go back button to close the post
+        time.sleep(3)
+        driver.execute_script("window.history.go(-1)") 
+        time.sleep(5)
+
+    except NoSuchElementException:
+        # Click the Chrome's go back button to close the post
+        time.sleep(3)
+        driver.execute_script("window.history.go(-1)") 
+
 
 
 
