@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
+from datetime import date
 import time
 import pandas as pd
 
@@ -148,76 +149,80 @@ for post_element in posts_elements:
         # Impressions from hashtag
         impressions_from_hashtag_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
         impressions_from_hashtag_spans = impressions_from_hashtag_block.find_elements(By.XPATH, ".//span")
+        impressions_from_hashtag = impressions_from_hashtag_spans[1].text
+    
+        print(impressions_from_hashtag)
 
-        # If a post doesn't have "From Hashtags"
-        if (impressions_from_hashtag_spans[0].text == "From Profile"):
-            impressions_from_hashtag = 0
+        # Impressions from profile
+        impressions_from_profile_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
+        impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
+        impressions_from_profile = impressions_from_profile_spans[1].text
+        print(impressions_from_profile)
 
-            # Impressions from profile
-            impressions_from_profile_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
-            impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
-            impressions_from_profile = impressions_from_profile_spans[1].text
-            print(impressions_from_profile)
+        # Impressions from other
+        impressions_from_other_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
+        impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
+        impressions_from_other = impressions_from_other_spans[1].text
+        print(impressions_from_other)
 
-            # Impressions from other
-            impressions_from_other_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
-            impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
-            impressions_from_other = impressions_from_other_spans[1].text
-            print(impressions_from_other)
+        # Follows back
+        follows_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
+        follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
+        follows = follows_block_spans[1].text
+        print(follows)
 
-            # Follows back
-            follows_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
-            follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
-            follows = follows_block_spans[1].text
-            print(follows)
+        # Impressions from profile
+        impressions_from_profile_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
+        impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
+        impressions_from_profile = impressions_from_profile_spans[1].text
+        print(impressions_from_profile)
 
-        else: 
-            impressions_from_hashtag = impressions_from_hashtag_spans[1].text
-            print(impressions_from_hashtag)
+        # Impressions from other
+        impressions_from_other_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
+        impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
+        impressions_from_other = impressions_from_other_spans[1].text
+        print(impressions_from_other)
 
-            # Impressions from profile
-            impressions_from_profile_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
-            impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
-            impressions_from_profile = impressions_from_profile_spans[1].text
-            print(impressions_from_profile)
-
-            # Impressions from other
-            impressions_from_other_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
-            impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
-            impressions_from_other = impressions_from_other_spans[1].text
-            print(impressions_from_other)
-
-            # Follows back
-            follows_block = insight_blocks[54] if num_insight_blocks == 55 else insight_blocks[53]
-            follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
-            follows = follows_block_spans[1].text
-            print(follows)
+        # Follows back
+        follows_block = insight_blocks[54] if num_insight_blocks == 55 else insight_blocks[53]
+        follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
+        follows = follows_block_spans[1].text
+        print(follows)
 
         post_data = [likes, comments, replies, saves, interations, profile_visits, account_reach, account_reach_not_follow,\
-                    impressions, impressions_from_home, impressions_from_profile, impressions_from_hashtag, impressions_from_other, follows]
-
-        # Convert all data from str to int
+                impressions, impressions_from_home, impressions_from_profile, impressions_from_hashtag, impressions_from_other, follows]
+        
 
         post_data = [data.replace(",", "") for data in post_data]
-        post_data = [eval(data) for data in post_data]
-
         posts.append(post_data)
 
         # Click the Chrome's go back button to close the post
         time.sleep(3)
         driver.execute_script("window.history.go(-1)") 
-        time.sleep(5)
+        time.sleep(3)
 
     except NoSuchElementException:
         non_regular_posts += 1
         # Click the Chrome's go back button to close the post
-        time.sleep(3)
+        time.sleep(2)
         driver.execute_script("window.history.go(-1)") 
 
 print("Number of posts get: ", len(posts_elements))
-print("Number of non-regular posts: ", regular_posts)
-print("Number of regular posts: ", non_regular_posts)
+print("Number of non-regular posts: ", non_regular_posts)
+print("Number of regular posts: ", regular_posts)
 df = pd.DataFrame(posts, columns=["likes", "comments", "replies", "saves", "interactions", "profile_visits", "account_reach", "account_reach_not_follow"\
-                                , "impressions", "impressions_from_home", "impressions_from_profile", "impressions_from_hashtag", "impressions_from_other", "follows"])
+                                , "impressions", "impressions_from_home", "impressions_from_hashtag", "impressions_from_profile", "impressions_from_other", "follows"])
+
+pd.set_option('display.max_columns', None)  # Show all columns
+pd.set_option('display.max_rows', None)  # Show all rows
+pd.set_option('display.width', None)  # Auto-expand the display
+pd.set_option('display.expand_frame_repr', False)  # Prevent the dataframe from wrapping
+
+df = df[~df["impressions"].str.contains(r'[^0-9]')]
+for col in df.columns:
+    df[col] = df[col].astype(int)
 print(df)
 
+today = date.today()
+date_format = today.strftime("%b_%d")
+df.to_excel("ig_post_data" + date_format + ".xlsx", index=False)
