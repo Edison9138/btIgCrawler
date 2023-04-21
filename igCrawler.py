@@ -11,6 +11,8 @@ from selenium.common.exceptions import NoSuchElementException
 from datetime import date
 import time
 import pandas as pd
+import re
+
 
 chrome_options = Options()
 chrome_options.add_experimental_option("detach", True)
@@ -20,6 +22,7 @@ chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 # Remember to download the chromedriver 
 PATH = "C:/Users/ediso/Downloads/chromedriver_win32/chromedriver.exe"
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+# driver = webdriver.Chrome
 
 # Go to the IG login page
 driver.get("https://www.instagram.com/")
@@ -60,6 +63,7 @@ print("Number of posts get: ", len(posts_elements))
 
 # List storing all posts and their data
 posts = []
+posts_labels = []
 
 regular_posts = 0
 non_regular_posts = 0
@@ -79,6 +83,7 @@ for post_element in posts_elements:
 
         insight_blocks = driver.find_elements(By.CLASS_NAME, "wbloks_1")
         num_insight_blocks = len(insight_blocks)
+        print("-----------------------------------")
         print("number of insight blocks", len(insight_blocks))
         # If has "external link taps" will have 1 more "wbloks_1"
 
@@ -102,20 +107,21 @@ for post_element in posts_elements:
         saves_block = insight_blocks[26]
         saves_span = saves_block.find_element(By.XPATH, ".//span")
         saves = saves_span.text
-        print(likes, comments, replies, saves)
+        print("Likes:", likes," Comments:", comments)
+        print("Replies:", replies, "Saves:", saves)
 
         # Interactions
         interactions_block = insight_blocks[36]
         interactions_spans = interactions_block.find_elements(By.XPATH, ".//span")
         interations = interactions_spans[0].text
-        print(interations)
+        print("Interactions:", interations)
 
         # The parse structure of profile visits and external link taps are the same
         # Profile visits
         profile_visits_block = insight_blocks[37]
         profile_visits_spans = profile_visits_block.find_elements(By.XPATH, ".//span")
         profile_visits = profile_visits_spans[1].text
-        print(profile_visits)
+        print("Profile Visits:", profile_visits)
 
         # Omit External link taps since not every post has it
         # External link taps
@@ -130,71 +136,76 @@ for post_element in posts_elements:
         account_reach = account_reach_spans[0].text
         account_reach_not_follow = account_reach_spans[2].text
         account_reach_not_follow = account_reach_not_follow[:account_reach_not_follow.index("%")]
-        print(account_reach)
-        print(account_reach_not_follow)
+        print("Accounts Reached:", account_reach)
+        print("Account Reached Not Follow:", account_reach_not_follow)
 
         # The parse structure of impressions, from home, from hashtags, from profile, from other, follows back are the same
         # Impressions 
         impressions_block = insight_blocks[49] if num_insight_blocks == 55 else insight_blocks[48]
         impressions_spans = impressions_block.find_elements(By.XPATH, ".//span")
         impressions = impressions_spans[1].text
-        print(impressions)
+        print("Impressions:", impressions)
 
         # Impressions from home
         impressions_from_home_block = insight_blocks[50] if num_insight_blocks == 55 else insight_blocks[49]
         impressions_from_home_spans = impressions_from_home_block.find_elements(By.XPATH, ".//span")
         impressions_from_home = impressions_from_home_spans[1].text
-        print(impressions_from_home)
+        print("Impressions from Home:", impressions_from_home)
 
         # Impressions from hashtag
         impressions_from_hashtag_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
         impressions_from_hashtag_spans = impressions_from_hashtag_block.find_elements(By.XPATH, ".//span")
         impressions_from_hashtag = impressions_from_hashtag_spans[1].text
-    
-        print(impressions_from_hashtag)
+        print("Impressions from Hashtag:", impressions_from_hashtag)
 
         # Impressions from profile
         impressions_from_profile_block = insight_blocks[51] if num_insight_blocks == 55 else insight_blocks[50]
         impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
         impressions_from_profile = impressions_from_profile_spans[1].text
-        print(impressions_from_profile)
+        print("Impressions from Profile:", impressions_from_profile)
 
         # Impressions from other
         impressions_from_other_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
         impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
         impressions_from_other = impressions_from_other_spans[1].text
-        print(impressions_from_other)
+        print("Impressions from Other:", impressions_from_other)
 
         # Follows back
         follows_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
         follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
         follows = follows_block_spans[1].text
-        print(follows)
+        print("Follows:", follows)
 
         # Impressions from profile
         impressions_from_profile_block = insight_blocks[52] if num_insight_blocks == 55 else insight_blocks[51]
         impressions_from_profile_spans = impressions_from_profile_block.find_elements(By.XPATH, ".//span")
         impressions_from_profile = impressions_from_profile_spans[1].text
-        print(impressions_from_profile)
+        print("Impressions from Profile:", impressions_from_profile)
 
         # Impressions from other
         impressions_from_other_block = insight_blocks[53] if num_insight_blocks == 55 else insight_blocks[52]
         impressions_from_other_spans = impressions_from_other_block.find_elements(By.XPATH, ".//span")
         impressions_from_other = impressions_from_other_spans[1].text
-        print(impressions_from_other)
+        print("Impressions from Other:", impressions_from_other)
 
         # Follows back
         follows_block = insight_blocks[54] if num_insight_blocks == 55 else insight_blocks[53]
         follows_block_spans = follows_block.find_elements(By.XPATH, ".//span")
         follows = follows_block_spans[1].text
-        print(follows)
+        print("Follows:", follows)
 
         post_data = [likes, comments, replies, saves, interations, profile_visits, account_reach, account_reach_not_follow,\
                 impressions, impressions_from_home, impressions_from_profile, impressions_from_hashtag, impressions_from_other, follows]
         
-
         post_data = [data.replace(",", "") for data in post_data]
         posts.append(post_data)
+
+        post_label_h1 = driver.find_element(By.XPATH, "//*[contains(text(), '【')]")
+        post_label_text = post_label_h1.text
+        post_label_text_lst = re.findall(r"【(.*?)】", post_label_text)
+        post_label_text = str("".join(post_label_text_lst))
+        posts_labels.append(post_label_text)
+        print("Post Label:", post_label_text)        
 
         # Click the Chrome's go back button to close the post
         time.sleep(3)
@@ -221,6 +232,9 @@ pd.set_option('display.expand_frame_repr', False)  # Prevent the dataframe from 
 df = df[~df["impressions"].str.contains(r'[^0-9]')]
 for col in df.columns:
     df[col] = df[col].astype(int)
+
+# Insert post label column
+df.insert(loc = 0, column = "label", value = posts_labels)
 print(df)
 
 today = date.today()
