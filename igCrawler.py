@@ -1,6 +1,4 @@
-# Install the required packages 
 # pip install selenium, webdriver_manager, pandas
-
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
