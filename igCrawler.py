@@ -1,4 +1,4 @@
-# pip install selenium, webdriver_manager, pandas
+# first need to pip install selenium, webdriver_manager, pandas
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -16,7 +16,7 @@ chrome_options = Options()
 chrome_options.add_experimental_option("detach", True)
 chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-# Download the chromedriver according to your Chrome version at https://chromedriver.chromium.org/downloads  
+# Download chromedriver according to your Chrome version at https://chromedriver.chromium.org/downloads  
 # Specify the path to "chromedriver.exe" on your computer
 # REMEMBER TO CHANGE THIS
 PATH = "C:/Users/ediso/Downloads/chromedriver_win32/chromedriver.exe"
@@ -121,6 +121,15 @@ for post_element in posts_elements:
         interations = interactions_spans[0].text
         print("Interactions:", interations)
 
+        # Detect if the post is paid boosted
+        # ad_taps_blocks = driver.find_elements(By.XPATH, ".//span[contains(text(),'Ad taps')]")
+
+        # From here on the paid boosted posts would be different from others
+        # if len(ad_taps_blocks) > 0:
+        #     print("paid boosted post!")
+
+
+        # else: 
         # The parsing structures of profile visits and external link taps are the same
         # Profile visits
         profile_visits_block = insight_blocks[37]
